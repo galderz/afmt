@@ -31,7 +31,7 @@ final class EclipseFormatter
         this.formatter = ToolFactory.createCodeFormatter(options());
     }
 
-    String format(final String source)
+    String format(String source)
     {
         final TextEdit edit = formatter.format(
             CodeFormatter.K_COMPILATION_UNIT | CodeFormatter.F_INCLUDE_COMMENTS
@@ -51,7 +51,7 @@ final class EclipseFormatter
         {
             edit.apply(document);
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             throw new RuntimeException("Failed to apply formatting edits", e);
         }

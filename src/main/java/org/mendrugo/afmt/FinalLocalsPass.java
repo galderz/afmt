@@ -27,20 +27,20 @@ final class FinalLocalsPass
 {
     private FinalLocalsPass() {}
 
-    static String apply(final String source)
+    static String apply(String source)
     {
         try
         {
             return doApply(source);
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             // If parsing fails, return source unchanged
             return source;
         }
     }
 
-    private static String doApply(final String source) throws Exception
+    private static String doApply(String source) throws Exception
     {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null)
@@ -65,7 +65,7 @@ final class FinalLocalsPass
         {
             units = task.parse();
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             return source;
         }
@@ -138,13 +138,13 @@ final class FinalLocalsPass
         private final java.util.Set<Long> seen = new java.util.HashSet<>();
         private final java.util.Set<Long> lambdaParamPositions = new java.util.HashSet<>();
 
-        LocalVarCollector(final CompilationUnitTree cu)
+        LocalVarCollector(CompilationUnitTree cu)
         {
             this.compilationUnit = cu;
         }
 
         @Override
-        public Void visitMethod(final MethodTree node, final Void unused)
+        public Void visitMethod(MethodTree node, Void unused)
         {
             final boolean wasInside = insideMethod;
             insideMethod = true;
@@ -161,7 +161,7 @@ final class FinalLocalsPass
         }
 
         @Override
-        public Void visitLambdaExpression(final LambdaExpressionTree node, final Void unused)
+        public Void visitLambdaExpression(LambdaExpressionTree node, Void unused)
         {
             // Mark lambda parameter positions so we skip them
             for (final VariableTree param : node.getParameters())
@@ -176,7 +176,7 @@ final class FinalLocalsPass
         }
 
         @Override
-        public Void visitVariable(final VariableTree node, final Void unused)
+        public Void visitVariable(VariableTree node, Void unused)
         {
             if (insideMethod)
             {
@@ -185,7 +185,7 @@ final class FinalLocalsPass
             return super.visitVariable(node, unused);
         }
 
-        private void addCandidate(final VariableTree node)
+        private void addCandidate(VariableTree node)
         {
             if (hasModifier(node, "final"))
             {
@@ -198,14 +198,14 @@ final class FinalLocalsPass
             }
         }
 
-        private long getStartPosition(final Tree tree)
+        private long getStartPosition(Tree tree)
         {
             return compilationUnit.getSourceFile() != null
                     ? ((com.sun.tools.javac.tree.JCTree) tree).getStartPosition()
                     : -1;
         }
 
-        private static boolean hasModifier(final VariableTree node, final String modifier)
+        private static boolean hasModifier(VariableTree node, String modifier)
         {
             return node.getModifiers().getFlags().contains(
                     javax.lang.model.element.Modifier.valueOf(modifier.toUpperCase()));
@@ -220,7 +220,7 @@ final class FinalLocalsPass
         final Set<String> assignedNames = new HashSet<>();
 
         @Override
-        public Void visitAssignment(final AssignmentTree node, final Void unused)
+        public Void visitAssignment(AssignmentTree node, Void unused)
         {
             if (node.getVariable() instanceof IdentifierTree id)
             {
@@ -230,7 +230,7 @@ final class FinalLocalsPass
         }
 
         @Override
-        public Void visitCompoundAssignment(final CompoundAssignmentTree node, final Void unused)
+        public Void visitCompoundAssignment(CompoundAssignmentTree node, Void unused)
         {
             if (node.getVariable() instanceof IdentifierTree id)
             {
@@ -240,7 +240,7 @@ final class FinalLocalsPass
         }
 
         @Override
-        public Void visitUnary(final UnaryTree node, final Void unused)
+        public Void visitUnary(UnaryTree node, Void unused)
         {
             // ++x, x++, --x, x-- are mutations
             switch (node.getKind())
@@ -259,7 +259,7 @@ final class FinalLocalsPass
         }
 
         @Override
-        public Void visitForLoop(final ForLoopTree node, final Void unused)
+        public Void visitForLoop(ForLoopTree node, Void unused)
         {
             // The update part of for(;;update) contains assignments
             return super.visitForLoop(node, unused);
@@ -273,14 +273,14 @@ final class FinalLocalsPass
     {
         private final String content;
 
-        SimpleSourceFileObject(final String name, final String content)
+        SimpleSourceFileObject(String name, String content)
         {
             super(java.net.URI.create("string:///" + name), Kind.SOURCE);
             this.content = content;
         }
 
         @Override
-        public CharSequence getCharContent(final boolean ignoreEncodingErrors)
+        public CharSequence getCharContent(boolean ignoreEncodingErrors)
         {
             return content;
         }

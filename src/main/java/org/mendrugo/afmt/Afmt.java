@@ -23,12 +23,12 @@ public final class Afmt
 {
     private Afmt() {}
 
-    public static void main(final String[] args)
+    public static void main(String[] args)
     {
         System.exit(run(args, System.in, System.out, System.err));
     }
 
-    static int run(final String[] args, final InputStream in, final PrintStream out, final PrintStream err)
+    static int run(String[] args, InputStream in, PrintStream out, PrintStream err)
     {
         if (args.length == 0)
         {
@@ -101,12 +101,12 @@ public final class Afmt
                     Files.writeString(path, output, StandardCharsets.UTF_8);
                 }
             }
-            catch (final IOException e)
+            catch (IOException e)
             {
                 err.println(path + ": " + e.getMessage());
                 hasErrors = true;
             }
-            catch (final Exception e)
+            catch (Exception e)
             {
                 err.println(path + ": formatting failed: " + e.getMessage());
                 hasErrors = true;
@@ -120,8 +120,8 @@ public final class Afmt
         return check && hasUnformatted ? 1 : 0;
     }
 
-    private static int formatStdin(final AfmtFormatter formatter, final InputStream in
-            , final PrintStream out, final PrintStream err)
+    private static int formatStdin(AfmtFormatter formatter, InputStream in
+            , PrintStream out, PrintStream err)
     {
         try
         {
@@ -131,21 +131,21 @@ public final class Afmt
             out.flush();
             return 0;
         }
-        catch (final IOException e)
+        catch (IOException e)
         {
             err.println("<stdin>: " + e.getMessage());
             return 1;
         }
     }
 
-    private static void printUsage(final PrintStream err)
+    private static void printUsage(PrintStream err)
     {
         err.println("Usage: afmt [--check] <files...>");
         err.println("       afmt -");
         err.println("       afmt --help");
     }
 
-    private static void printHelp(final PrintStream out)
+    private static void printHelp(PrintStream out)
     {
         out.println("Usage: afmt [OPTIONS] FILE...");
         out.println();

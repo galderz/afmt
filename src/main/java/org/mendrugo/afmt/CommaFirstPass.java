@@ -39,7 +39,7 @@ final class CommaFirstPass
         return current;
     }
 
-    private static String applyOnce(final String source)
+    private static String applyOnce(String source)
     {
         final List<String> lines = splitLines(source);
         final List<String> result = new ArrayList<>(lines.size());
@@ -125,7 +125,7 @@ final class CommaFirstPass
      * lexical context (not inside a string, char, block comment, or line comment).
      * Returns -1 if no such comma exists.
      */
-    private static int findTrailingCommaInNormalContext(final String line)
+    private static int findTrailingCommaInNormalContext(String line)
     {
         boolean inString = false;
         boolean inChar = false;
@@ -202,7 +202,7 @@ final class CommaFirstPass
         return -1;
     }
 
-    private static int nextNonBlankLine(final List<String> lines, final int from)
+    private static int nextNonBlankLine(List<String> lines, int from)
     {
         for (int i = from; i < lines.size(); i++)
         {
@@ -214,7 +214,7 @@ final class CommaFirstPass
         return -1;
     }
 
-    private static int leadingSpaces(final String line)
+    private static int leadingSpaces(String line)
     {
         int count = 0;
         for (int i = 0; i < line.length() && line.charAt(i) == ' '; i++)
@@ -224,7 +224,7 @@ final class CommaFirstPass
         return count;
     }
 
-    private static List<String> splitLines(final String source)
+    private static List<String> splitLines(String source)
     {
         final List<String> lines = new ArrayList<>();
         int start = 0;
@@ -247,7 +247,7 @@ final class CommaFirstPass
      * Advances the lexical state through one line of source.
      * Returns the state at the END of the line (which is the start state for the next line).
      */
-    private static LexicalState advanceState(final String line, LexicalState state)
+    private static LexicalState advanceState(String line, LexicalState state)
     {
         for (int i = 0; i < line.length(); i++)
         {

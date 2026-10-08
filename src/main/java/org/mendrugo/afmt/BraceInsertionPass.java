@@ -22,19 +22,19 @@ final class BraceInsertionPass
 {
     private BraceInsertionPass() {}
 
-    static String apply(final String source)
+    static String apply(String source)
     {
         try
         {
             return doApply(source);
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             return source;
         }
     }
 
-    private static String doApply(final String source) throws Exception
+    private static String doApply(String source) throws Exception
     {
         final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null)
@@ -56,7 +56,7 @@ final class BraceInsertionPass
         {
             units = task.parse();
         }
-        catch (final Exception e)
+        catch (Exception e)
         {
             return source;
         }
@@ -97,14 +97,14 @@ final class BraceInsertionPass
         private final CompilationUnitTree cu;
         private final String source;
 
-        UnbracedBodyCollector(final CompilationUnitTree cu, final String source)
+        UnbracedBodyCollector(CompilationUnitTree cu, String source)
         {
             this.cu = cu;
             this.source = source;
         }
 
         @Override
-        public Void visitIf(final IfTree node, final Void unused)
+        public Void visitIf(IfTree node, Void unused)
         {
             insertBracesIfNeeded(node.getThenStatement());
             if (node.getElseStatement() != null
@@ -116,34 +116,34 @@ final class BraceInsertionPass
         }
 
         @Override
-        public Void visitForLoop(final ForLoopTree node, final Void unused)
+        public Void visitForLoop(ForLoopTree node, Void unused)
         {
             insertBracesIfNeeded(node.getStatement());
             return super.visitForLoop(node, unused);
         }
 
         @Override
-        public Void visitEnhancedForLoop(final EnhancedForLoopTree node, final Void unused)
+        public Void visitEnhancedForLoop(EnhancedForLoopTree node, final Void unused)
         {
             insertBracesIfNeeded(node.getStatement());
             return super.visitEnhancedForLoop(node, unused);
         }
 
         @Override
-        public Void visitWhileLoop(final WhileLoopTree node, final Void unused)
+        public Void visitWhileLoop(final WhileLoopTree node, Void unused)
         {
             insertBracesIfNeeded(node.getStatement());
             return super.visitWhileLoop(node, unused);
         }
 
         @Override
-        public Void visitDoWhileLoop(final DoWhileLoopTree node, final Void unused)
+        public Void visitDoWhileLoop(DoWhileLoopTree node, Void unused)
         {
             insertBracesIfNeeded(node.getStatement());
             return super.visitDoWhileLoop(node, unused);
         }
 
-        private void insertBracesIfNeeded(final StatementTree stmt)
+        private void insertBracesIfNeeded(StatementTree stmt)
         {
             if (stmt == null || stmt.getKind() == Tree.Kind.BLOCK)
             {
@@ -168,7 +168,7 @@ final class BraceInsertionPass
             insertions.add(new BraceInsertion(startPos, "{\n" + indent));
         }
 
-        private String findIndentAt(final int position)
+        private String findIndentAt(int position)
         {
             int lineStart = position;
             while (lineStart > 0 && source.charAt(lineStart - 1) != '\n')

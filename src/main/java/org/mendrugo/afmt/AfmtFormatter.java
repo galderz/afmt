@@ -31,7 +31,7 @@ public final class AfmtFormatter
      * @param source the input Java source
      * @return the formatted source
      */
-    public String format(final String source)
+    public String format(String source)
     {
         // Pass 1: Insert braces around unbraced control bodies
         String result = BraceInsertionPass.apply(source);
