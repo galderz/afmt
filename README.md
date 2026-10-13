@@ -13,6 +13,7 @@ Java source formatter for [Attimo](https://github.com/galderz/attimo)'s Aeron-in
 | **4-space indent** | No tabs |
 | **Comma-first** | `, secondArg` on a new line |
 | **Braces always required** | Even for single-line `if`/`for`/`while` |
+| **Comments preserved** | Javadoc, block comments, and line comments are never reformatted |
 
 ### Example
 
@@ -124,7 +125,7 @@ Source
 
 - **BraceInsertionPass** — Uses javac's parser to build an AST, walks `if`, `for`, `while`, and `do-while` statements, and inserts `{`/`}` around bodies that lack them.
 
-- **Eclipse JDT Formatter** — The Eclipse JDT `CodeFormatter` with ~30 configured options for Allman brace placement on all constructs (classes, methods, blocks, switches, lambdas, records, etc.), `else`/`catch`/`finally` on new lines, 4-space indentation with spaces only.
+- **Eclipse JDT Formatter** — The Eclipse JDT `CodeFormatter` with ~30 configured options for Allman brace placement on all constructs (classes, methods, blocks, switches, lambdas, records, etc.), `else`/`catch`/`finally` on new lines, 4-space indentation with spaces only. Comments (Javadoc, block, and line) are left untouched — the formatter does not reformat or re-wrap comment content.
 
 - **FinalLocalsPass** — Uses javac's parser to find local variables that are effectively final (never reassigned, incremented, or compound-assigned). Inserts `final` keyword. Skips fields, method/constructor parameters, catch parameters, lambda parameters, and record components.
 

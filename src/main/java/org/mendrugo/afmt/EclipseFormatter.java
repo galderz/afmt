@@ -21,6 +21,9 @@ import org.eclipse.text.edits.TextEdit;
  *   <li>Braces always required around control-flow bodies</li>
  *   <li>No wildcard imports (via import threshold = 9999)</li>
  * </ul>
+ *
+ * <p>Comments (Javadoc, block, and line) are deliberately left untouched.
+ * The formatter does not re-wrap or reformat comment content.
  */
 final class EclipseFormatter
 {
@@ -34,7 +37,7 @@ final class EclipseFormatter
     String format(String source)
     {
         final TextEdit edit = formatter.format(
-            CodeFormatter.K_COMPILATION_UNIT | CodeFormatter.F_INCLUDE_COMMENTS
+            CodeFormatter.K_COMPILATION_UNIT
             , source
             , 0
             , source.length()
