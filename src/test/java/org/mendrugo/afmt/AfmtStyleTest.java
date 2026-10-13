@@ -169,14 +169,14 @@ class AfmtStyleTest
 
         assertTrue(output.contains("static int run(\n"),
                 "opening paren should be followed by newline: " + output);
-        assertTrue(output.contains("String[] args\n"),
-                "first param on its own line without trailing comma: " + output);
-        assertTrue(output.contains(", InputStream in\n"),
-                "second param with leading comma: " + output);
-        assertTrue(output.contains(", PrintStream out\n"),
-                "third param with leading comma: " + output);
-        assertTrue(output.contains(", PrintStream err\n"),
-                "fourth param with leading comma: " + output);
+        assertTrue(output.contains("        String[] args\n"),
+                "first param at 8-space indent: " + output);
+        assertTrue(output.contains("        , InputStream in\n"),
+                "comma aligned with first param at 8-space indent: " + output);
+        assertTrue(output.contains("        , PrintStream out\n"),
+                "comma aligned with first param at 8-space indent: " + output);
+        assertTrue(output.contains("        , PrintStream err\n"),
+                "comma aligned with first param at 8-space indent: " + output);
         assertTrue(output.contains("    )\n"),
                 "closing paren on its own line: " + output);
     }

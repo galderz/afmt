@@ -101,10 +101,8 @@ final class CommaFirstPass
             final int nextIndent = leadingSpaces(nextLine);
             final String nextContent = nextLine.stripLeading();
 
-            // Place ", " at the same indentation as the continuation line
-            // Adjust: comma goes at (indent - 2) to align visually
-            final int commaIndent = Math.max(0, nextIndent - 2);
-            final String transformedNext = " ".repeat(commaIndent) + ", " + nextContent;
+            // Place comma at the same indentation as the first element
+            final String transformedNext = " ".repeat(nextIndent) + ", " + nextContent;
 
             result.add(thisWithoutComma);
 
