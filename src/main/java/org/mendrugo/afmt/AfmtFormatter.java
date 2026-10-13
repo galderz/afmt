@@ -3,18 +3,20 @@ package org.mendrugo.afmt;
 /**
  * Composes the formatting pipeline for Attimo's code style.
  *
- * <p>The pipeline runs three passes in sequence:
+ * <p>The pipeline runs five passes in sequence:
  * <ol>
- *   <li><strong>Eclipse JDT</strong> — Allman braces, 4-space indent, structural formatting,
- *       brace enforcement</li>
+ *   <li><strong>BraceInsertion</strong> — inserts braces around unbraced control-flow
+ *       bodies</li>
+ *   <li><strong>Eclipse JDT</strong> — Allman braces, 4-space indent, structural formatting</li>
  *   <li><strong>FinalLocals</strong> — inserts {@code final} on effectively-final local
- *       variables and method parameters</li>
+ *       variables</li>
+ *   <li><strong>Eclipse JDT</strong> (again) — re-normalizes whitespace after {@code final}
+ *       insertions</li>
+ *   <li><strong>ParamPerLine</strong> — wraps method/constructor parameters one-per-line
+ *       when the declaration exceeds 80 characters</li>
  *   <li><strong>CommaFirst</strong> — transforms trailing commas in multi-line lists to
  *       leading commas on continuation lines (Elm-style)</li>
  * </ol>
- *
- * <p>After the three passes, the Eclipse JDT formatter runs once more to normalize
- * any whitespace disturbed by the {@code final} insertions.
  */
 public final class AfmtFormatter
 {
@@ -45,7 +47,10 @@ public final class AfmtFormatter
         // Re-format after 'final' insertion to fix indentation
         result = eclipse.format(result);
 
-        // Pass 4: Comma-first transformation
+        // Pass 4: Wrap method/constructor params one-per-line when declaration > 80 chars
+        result = ParamPerLinePass.apply(result);
+
+        // Pass 5: Comma-first transformation
         result = CommaFirstPass.apply(result);
 
         return result;

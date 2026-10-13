@@ -156,6 +156,48 @@ class AfmtStyleTest
     }
 
     @Test
+    void wrapsMethodParamsWhenLineExceeds80Chars()
+    {
+        final String input = """
+                class Example {
+                    static int run(String[] args, InputStream in, PrintStream out, PrintStream err) {
+                        return 0;
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("static int run(\n"),
+                "opening paren should be followed by newline: " + output);
+        assertTrue(output.contains("String[] args\n"),
+                "first param on its own line without trailing comma: " + output);
+        assertTrue(output.contains(", InputStream in\n"),
+                "second param with leading comma: " + output);
+        assertTrue(output.contains(", PrintStream out\n"),
+                "third param with leading comma: " + output);
+        assertTrue(output.contains(", PrintStream err\n"),
+                "fourth param with leading comma: " + output);
+        assertTrue(output.contains("    )\n"),
+                "closing paren on its own line: " + output);
+    }
+
+    @Test
+    void doesNotWrapMethodParamsWhenLineWithin80Chars()
+    {
+        final String input = """
+                class Example {
+                    void run(String name, int count) {
+                        use(name, count);
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("run(String name, int count)"),
+                "short params should stay on one line: " + output);
+    }
+
+    @Test
     void bracesAlwaysRequired()
     {
         final String input = """

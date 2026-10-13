@@ -11,6 +11,7 @@ Java source formatter for [Attimo](https://github.com/galderz/attimo)'s Aeron-in
 | **Allman braces** | Opening `{` on its own line |
 | **`final` on locals** | `final var config = AttimoConfig.load();` (local variables only, not method/constructor/catch parameters) |
 | **4-space indent** | No tabs |
+| **Params per line** | Method/constructor declarations exceeding 80 chars get one parameter per line |
 | **Comma-first** | `, secondArg` on a new line |
 | **Braces always required** | Even for single-line `if`/`for`/`while` |
 | **Comments preserved** | Javadoc, block comments, and line comments are never reformatted |
@@ -116,7 +117,13 @@ Source
               │
               ▼
 ┌─────────────────────────────────┐
-│ 5. CommaFirstPass               │  Move trailing commas to leading
+│ 5. ParamPerLinePass             │  Wrap method/constructor params
+│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│ 6. CommaFirstPass               │  Move trailing commas to leading
 │    (lexical transformer)        │  position on continuation lines
 └─────────────────────────────────┘
 ```
@@ -128,6 +135,8 @@ Source
 - **Eclipse JDT Formatter** — The Eclipse JDT `CodeFormatter` with ~30 configured options for Allman brace placement on all constructs (classes, methods, blocks, switches, lambdas, records, etc.), `else`/`catch`/`finally` on new lines, 4-space indentation with spaces only. Comments (Javadoc, block, and line) are left untouched — the formatter does not reformat or re-wrap comment content.
 
 - **FinalLocalsPass** — Uses javac's parser to find local variables that are effectively final (never reassigned, incremented, or compound-assigned). Inserts `final` keyword. Skips fields, method/constructor parameters, catch parameters, lambda parameters, and record components.
+
+- **ParamPerLinePass** — Uses javac's parser to find method and constructor declarations whose parameter list would exceed 80 characters on a single line. Wraps each parameter onto its own line, indented one level deeper than the declaration. The closing `)` goes on its own line at the declaration's indentation level. Runs after Eclipse JDT so the wrapping is not collapsed back, and before CommaFirstPass so trailing commas are converted to leading commas.
 
 - **CommaFirstPass** — Lexically aware transformer that tracks strings, characters, text blocks, and comments. Finds trailing commas on lines where the next continuation line is not a closing delimiter, and moves the comma to lead the next line. Applies iteratively until stable.
 
