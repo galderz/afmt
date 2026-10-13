@@ -9,7 +9,7 @@ Java source formatter for [Attimo](https://github.com/galderz/attimo)'s Aeron-in
 | Rule | Description |
 |------|-------------|
 | **Allman braces** | Opening `{` on its own line |
-| **`final` on locals** | `final var config = AttimoConfig.load();` |
+| **`final` on locals** | `final var config = AttimoConfig.load();` (local variables only, not method/constructor/catch parameters) |
 | **4-space indent** | No tabs |
 | **Comma-first** | `, secondArg` on a new line |
 | **Braces always required** | Even for single-line `if`/`for`/`while` |
@@ -39,7 +39,7 @@ public class SpotAdvisor {
 ```java
 public class SpotAdvisor
 {
-    public String recommend(final String feature, final String preferred, final boolean fallback)
+    public String recommend(String feature, String preferred, boolean fallback)
     {
         final var group = regions.stream()
                 .filter(r -> r.startsWith(preferred))
@@ -104,7 +104,7 @@ Source
               ▼
 ┌─────────────────────────────────┐
 │ 3. FinalLocalsPass              │  Insert 'final' on effectively-final
-│    (javac parser + AST walk)    │  local variables and method parameters
+│    (javac parser + AST walk)    │  local variables
 └─────────────┬───────────────────┘
               │
               ▼
@@ -126,7 +126,7 @@ Source
 
 - **Eclipse JDT Formatter** — The Eclipse JDT `CodeFormatter` with ~30 configured options for Allman brace placement on all constructs (classes, methods, blocks, switches, lambdas, records, etc.), `else`/`catch`/`finally` on new lines, 4-space indentation with spaces only.
 
-- **FinalLocalsPass** — Uses javac's parser to find local variables and method parameters that are effectively final (never reassigned, incremented, or compound-assigned). Inserts `final` keyword. Skips fields, lambda parameters, and record components.
+- **FinalLocalsPass** — Uses javac's parser to find local variables that are effectively final (never reassigned, incremented, or compound-assigned). Inserts `final` keyword. Skips fields, method/constructor parameters, catch parameters, lambda parameters, and record components.
 
 - **CommaFirstPass** — Lexically aware transformer that tracks strings, characters, text blocks, and comments. Finds trailing commas on lines where the next continuation line is not a closing delimiter, and moves the comma to lead the next line. Applies iteratively until stable.
 

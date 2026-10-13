@@ -58,7 +58,7 @@ class FinalLocalsPassTest
     }
 
     @Test
-    void insertsFinalOnMethodParameters()
+    void doesNotInsertFinalOnMethodParameters()
     {
         final String input = """
                 class Example {
@@ -69,7 +69,42 @@ class FinalLocalsPassTest
                 """;
         final String output = FinalLocalsPass.apply(input);
 
-        assertTrue(output.contains("final String name"), "should insert final on param: " + output);
+        assertFalse(output.contains("final String name"), "should not insert final on method param: " + output);
+    }
+
+    @Test
+    void doesNotInsertFinalOnConstructorParameters()
+    {
+        final String input = """
+                class Example {
+                    Example(String name, int count) {
+                        System.out.println(name);
+                    }
+                }
+                """;
+        final String output = FinalLocalsPass.apply(input);
+
+        assertFalse(output.contains("final String name"), "should not insert final on constructor param: " + output);
+        assertFalse(output.contains("final int count"), "should not insert final on constructor param: " + output);
+    }
+
+    @Test
+    void doesNotInsertFinalOnCatchParameters()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        try {
+                            work();
+                        } catch (Exception e) {
+                            handle(e);
+                        }
+                    }
+                }
+                """;
+        final String output = FinalLocalsPass.apply(input);
+
+        assertFalse(output.contains("final Exception e"), "should not insert final on catch param: " + output);
     }
 
     @Test

@@ -104,7 +104,7 @@ class AfmtStyleTest
     }
 
     @Test
-    void finalOnMethodParameters()
+    void noFinalOnMethodParameters()
     {
         final String input = """
                 class Example {
@@ -115,8 +115,8 @@ class AfmtStyleTest
                 """;
         final String output = formatter.format(input);
 
-        assertTrue(output.contains("final String name"), "param should get final: " + output);
-        assertTrue(output.contains("final int count"), "param should get final: " + output);
+        assertTrue(!output.contains("final String name"), "param should not get final: " + output);
+        assertTrue(!output.contains("final int count"), "param should not get final: " + output);
     }
 
     @Test
@@ -151,7 +151,7 @@ class AfmtStyleTest
         final String output = formatter.format(input);
 
         // After comma-first, commas should lead continuation lines
-        assertTrue(output.contains(", final String second") || output.contains(", String second"),
+        assertTrue(output.contains(", String second"),
                 "comma should lead continuation line: " + output);
     }
 

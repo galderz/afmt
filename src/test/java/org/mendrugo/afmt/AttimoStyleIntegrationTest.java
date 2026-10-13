@@ -57,9 +57,9 @@ class AttimoStyleIntegrationTest
         // final on locals
         assertTrue(output.contains("final var regionGroup"), "final var: " + output);
 
-        // final on parameters
-        assertTrue(output.contains("final IsaFeature feature") || output.contains("final IsaFeature"),
-                "final on param: " + output);
+        // no final on parameters
+        assertTrue(!output.contains("final IsaFeature feature"),
+                "no final on param: " + output);
 
         // Allman if braces
         assertTrue(output.contains("if (regionGroup.regions().isEmpty())\n"),

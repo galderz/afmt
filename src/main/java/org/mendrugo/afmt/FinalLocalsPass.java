@@ -16,6 +16,9 @@ import com.sun.source.util.TreeScanner;
  * Inserts {@code final} on local variable declarations that are not already
  * {@code final} and are never reassigned (effectively final).
  *
+ * <p>Method parameters, constructor parameters, and exception catch parameters
+ * are left untouched. Lambda parameters are also skipped.
+ *
  * <p>Uses the javac parser to build an AST, walks it to find local variables,
  * then performs a second walk to find assignments. Variables that are declared
  * without {@code final} and are never reassigned get {@code final} inserted.
@@ -136,7 +139,7 @@ final class FinalLocalsPass
         private final CompilationUnitTree compilationUnit;
         private boolean insideMethod = false;
         private final java.util.Set<Long> seen = new java.util.HashSet<>();
-        private final java.util.Set<Long> lambdaParamPositions = new java.util.HashSet<>();
+        private final java.util.Set<Long> paramPositions = new java.util.HashSet<>();
 
         LocalVarCollector(CompilationUnitTree cu)
         {
@@ -149,10 +152,13 @@ final class FinalLocalsPass
             final boolean wasInside = insideMethod;
             insideMethod = true;
 
-            // Add 'final' to method parameters
-            for (final VariableTree param : node.getParameters())
+            for (VariableTree param : node.getParameters())
             {
-                addCandidate(param);
+                final long pos = getStartPosition(param);
+                if (pos >= 0)
+                {
+                    paramPositions.add(pos);
+                }
             }
 
             super.visitMethod(node, unused);
@@ -163,16 +169,26 @@ final class FinalLocalsPass
         @Override
         public Void visitLambdaExpression(LambdaExpressionTree node, Void unused)
         {
-            // Mark lambda parameter positions so we skip them
-            for (final VariableTree param : node.getParameters())
+            for (VariableTree param : node.getParameters())
             {
                 final long pos = getStartPosition(param);
                 if (pos >= 0)
                 {
-                    lambdaParamPositions.add(pos);
+                    paramPositions.add(pos);
                 }
             }
             return super.visitLambdaExpression(node, unused);
+        }
+
+        @Override
+        public Void visitCatch(CatchTree node, Void unused)
+        {
+            final long pos = getStartPosition(node.getParameter());
+            if (pos >= 0)
+            {
+                paramPositions.add(pos);
+            }
+            return super.visitCatch(node, unused);
         }
 
         @Override
@@ -192,7 +208,7 @@ final class FinalLocalsPass
                 return;
             }
             final long pos = getStartPosition(node);
-            if (pos >= 0 && seen.add(pos) && !lambdaParamPositions.contains(pos))
+            if (pos >= 0 && seen.add(pos) && !paramPositions.contains(pos))
             {
                 candidates.add(new LocalVarInfo(node.getName().toString(), (int) pos));
             }
