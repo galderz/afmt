@@ -235,6 +235,23 @@ class AfmtStyleTest
     }
 
     @Test
+    void doesNotWrapSingleArgMethodCallEvenWhenExceeds80Chars()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        assertTrue(output.contains("some very long assertion string that makes this line exceed eighty characters"));
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains(
+                "assertTrue(output.contains(\"some very long assertion string that makes this line exceed eighty characters\"))"),
+                "single-arg call should stay on one line: " + output);
+    }
+
+    @Test
     void doesNotWrapMethodParamsWhenLineWithin80Chars()
     {
         final String input = """

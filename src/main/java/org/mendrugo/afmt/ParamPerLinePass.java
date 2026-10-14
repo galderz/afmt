@@ -34,6 +34,11 @@ import com.sun.source.util.TreeScanner;
  * );
  * }</pre>
  *
+ * <p>Method calls and constructor invocations with a single argument are
+ * exempt — a single argument is never split even if the line exceeds 80
+ * characters. Method and constructor <em>declarations</em> with a single
+ * parameter are still wrapped.
+ *
  * <p>The trailing commas are subsequently transformed to leading commas
  * by {@link CommaFirstPass}.
  */
@@ -163,7 +168,7 @@ final class ParamPerLinePass
         public Void visitMethodInvocation(MethodInvocationTree node, Void unused)
         {
             final var args = node.getArguments();
-            if (!args.isEmpty())
+            if (args.size() > 1)
             {
                 tryWrap(args);
             }
@@ -174,7 +179,7 @@ final class ParamPerLinePass
         public Void visitNewClass(NewClassTree node, Void unused)
         {
             final var args = node.getArguments();
-            if (!args.isEmpty())
+            if (args.size() > 1)
             {
                 tryWrap(args);
             }
