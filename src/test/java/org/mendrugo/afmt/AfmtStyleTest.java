@@ -182,6 +182,59 @@ class AfmtStyleTest
     }
 
     @Test
+    void wrapsMethodCallArgsWhenLineExceeds80Chars()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        TextEdit edit = formatter.format(K_COMPILATION_UNIT, source, 0, source.length(), 0, "\\n");
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("formatter.format(\n"),
+                "opening paren should be followed by newline: " + output);
+        assertTrue(output.contains("            K_COMPILATION_UNIT\n"),
+                "first arg at 12-space indent: " + output);
+        assertTrue(output.contains("            , source\n"),
+                "comma aligned with first arg at 12-space indent: " + output);
+        assertTrue(output.contains("            , 0\n"),
+                "comma aligned with first arg at 12-space indent: " + output);
+        assertTrue(output.contains("            , source.length()\n"),
+                "comma aligned with first arg at 12-space indent: " + output);
+        assertTrue(output.contains("        );\n"),
+                "closing paren on its own line: " + output);
+    }
+
+    @Test
+    void preservesAlreadySplitMethodCallArgs()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        TextEdit edit = formatter.format(
+                            K_COMPILATION_UNIT,
+                            source,
+                            0,
+                            source.length(),
+                            0,
+                            "\\n"
+                        );
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("            K_COMPILATION_UNIT\n"),
+                "first arg preserved at 12-space indent: " + output);
+        assertTrue(output.contains("            , source\n"),
+                "comma aligned with first arg: " + output);
+        assertTrue(output.contains("        );\n"),
+                "closing paren preserved: " + output);
+    }
+
+    @Test
     void doesNotWrapMethodParamsWhenLineWithin80Chars()
     {
         final String input = """

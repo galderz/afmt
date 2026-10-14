@@ -7,29 +7,31 @@ import java.util.List;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.*;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreeScanner;
 
 /**
- * Wraps method and constructor parameters one-per-line when the declaration
- * exceeds 80 characters.
+ * Wraps method/constructor parameters and method call arguments one-per-line
+ * when the line exceeds 80 characters.
  *
- * <p>Given a method declaration that exceeds 80 characters on a single line:
+ * <p>Applies to method declarations, constructor declarations, method calls,
+ * and constructor invocations ({@code new}). Given a line that exceeds 80
+ * characters:
  * <pre>{@code
- * static int run(String[] args, InputStream in, PrintStream out, PrintStream err)
+ * final TextEdit edit = formatter.format(K_COMPILATION_UNIT, source, 0, source.length(), 0, "\n");
  * }</pre>
  *
  * <p>This pass produces:
  * <pre>{@code
- * static int run(
- *     String[] args,
- *     InputStream in,
- *     PrintStream out,
- *     PrintStream err
- * )
+ * final TextEdit edit = formatter.format(
+ *     K_COMPILATION_UNIT,
+ *     source,
+ *     0,
+ *     source.length(),
+ *     0,
+ *     "\n"
+ * );
  * }</pre>
  *
  * <p>The trailing commas are subsequently transformed to leading commas
@@ -89,7 +91,7 @@ final class ParamPerLinePass
             return source;
         }
 
-        final var collector = new MethodParamCollector(cu, source);
+        final var collector = new ParamCollector(cu, source);
         collector.scan(cu, null);
 
         if (collector.replacements.isEmpty())
@@ -97,25 +99,50 @@ final class ParamPerLinePass
             return source;
         }
 
-        collector.replacements.sort(Comparator.comparingInt(Replacement::start).reversed());
+        final var filtered = filterOverlapping(collector.replacements);
+
+        filtered.sort(Comparator.comparingInt(Replacement::start).reversed());
 
         final var result = new StringBuilder(source);
-        for (final var r : collector.replacements)
+        for (final var r : filtered)
         {
             result.replace(r.start, r.end, r.text);
         }
         return result.toString();
     }
 
+    private static List<Replacement> filterOverlapping(List<Replacement> replacements)
+    {
+        replacements.sort(Comparator.comparingInt(Replacement::start));
+        final var filtered = new ArrayList<Replacement>();
+        for (final var r : replacements)
+        {
+            boolean overlaps = false;
+            for (final var existing : filtered)
+            {
+                if (r.start >= existing.start && r.end <= existing.end)
+                {
+                    overlaps = true;
+                    break;
+                }
+            }
+            if (!overlaps)
+            {
+                filtered.add(r);
+            }
+        }
+        return filtered;
+    }
+
     private record Replacement(int start, int end, String text) {}
 
-    private static final class MethodParamCollector extends TreeScanner<Void, Void>
+    private static final class ParamCollector extends TreeScanner<Void, Void>
     {
         final List<Replacement> replacements = new ArrayList<>();
         private final CompilationUnitTree cu;
         private final String source;
 
-        MethodParamCollector(CompilationUnitTree cu, String source)
+        ParamCollector(CompilationUnitTree cu, String source)
         {
             this.cu = cu;
             this.source = source;
@@ -127,22 +154,44 @@ final class ParamPerLinePass
             final var params = node.getParameters();
             if (!params.isEmpty())
             {
-                tryWrapParams(params);
+                tryWrap(params);
             }
             return super.visitMethod(node, unused);
         }
 
-        private void tryWrapParams(List<? extends VariableTree> params)
+        @Override
+        public Void visitMethodInvocation(MethodInvocationTree node, Void unused)
         {
-            final int firstParamStart = startPos(params.get(0));
-            final int lastParamEnd = endPos(params.get(params.size() - 1));
+            final var args = node.getArguments();
+            if (!args.isEmpty())
+            {
+                tryWrap(args);
+            }
+            return super.visitMethodInvocation(node, unused);
+        }
 
-            if (firstParamStart < 0 || lastParamEnd < 0)
+        @Override
+        public Void visitNewClass(NewClassTree node, Void unused)
+        {
+            final var args = node.getArguments();
+            if (!args.isEmpty())
+            {
+                tryWrap(args);
+            }
+            return super.visitNewClass(node, unused);
+        }
+
+        private void tryWrap(List<? extends Tree> elements)
+        {
+            final int firstStart = startPos(elements.get(0));
+            final int lastEnd = endPos(elements.get(elements.size() - 1));
+
+            if (firstStart < 0 || lastEnd < 0)
             {
                 return;
             }
 
-            int openParen = firstParamStart - 1;
+            int openParen = firstStart - 1;
             while (openParen >= 0 && source.charAt(openParen) != '(')
             {
                 openParen--;
@@ -152,7 +201,7 @@ final class ParamPerLinePass
                 return;
             }
 
-            int closeParen = lastParamEnd;
+            int closeParen = lastEnd;
             while (closeParen < source.length() && source.charAt(closeParen) != ')')
             {
                 closeParen++;
@@ -162,16 +211,21 @@ final class ParamPerLinePass
                 return;
             }
 
-            final var paramTexts = new ArrayList<String>();
-            for (int i = 0; i < params.size(); i++)
+            final var elementTexts = new ArrayList<String>();
+            for (int i = 0; i < elements.size(); i++)
             {
-                final int pStart = startPos(params.get(i));
-                final int pEnd = endPos(params.get(i));
-                if (pStart < 0 || pEnd < 0)
+                final int eStart = startPos(elements.get(i));
+                final int eEnd = endPos(elements.get(i));
+                if (eStart < 0 || eEnd < 0)
                 {
                     return;
                 }
-                paramTexts.add(source.substring(pStart, pEnd).strip());
+                final String text = source.substring(eStart, eEnd).strip();
+                if (text.contains("\n"))
+                {
+                    return;
+                }
+                elementTexts.add(text);
             }
 
             int lineStart = openParen;
@@ -184,7 +238,7 @@ final class ParamPerLinePass
             final String paramIndent = baseIndent + "    ";
 
             final String prefix = source.substring(lineStart, openParen);
-            final String singleLine = prefix + "(" + String.join(", ", paramTexts) + ")";
+            final String singleLine = prefix + "(" + String.join(", ", elementTexts) + ")";
 
             if (singleLine.length() <= MAX_LINE_LENGTH)
             {
@@ -193,10 +247,10 @@ final class ParamPerLinePass
 
             final var wrapped = new StringBuilder();
             wrapped.append("(\n");
-            for (int i = 0; i < paramTexts.size(); i++)
+            for (int i = 0; i < elementTexts.size(); i++)
             {
-                wrapped.append(paramIndent).append(paramTexts.get(i));
-                if (i < paramTexts.size() - 1)
+                wrapped.append(paramIndent).append(elementTexts.get(i));
+                if (i < elementTexts.size() - 1)
                 {
                     wrapped.append(",");
                 }
@@ -207,14 +261,14 @@ final class ParamPerLinePass
             replacements.add(new Replacement(openParen, closeParen + 1, wrapped.toString()));
         }
 
-        private int startPos(VariableTree param)
+        private int startPos(Tree tree)
         {
-            return (int) ((com.sun.tools.javac.tree.JCTree) param).getStartPosition();
+            return (int) ((com.sun.tools.javac.tree.JCTree) tree).getStartPosition();
         }
 
-        private int endPos(VariableTree param)
+        private int endPos(Tree tree)
         {
-            return (int) ((com.sun.tools.javac.tree.JCTree) param).getEndPosition(
+            return (int) ((com.sun.tools.javac.tree.JCTree) tree).getEndPosition(
                 ((com.sun.tools.javac.tree.JCTree.JCCompilationUnit) cu).endPositions);
         }
 
