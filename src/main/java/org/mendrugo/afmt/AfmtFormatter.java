@@ -12,14 +12,14 @@ package org.mendrugo.afmt;
  *       variables</li>
  *   <li><strong>Eclipse JDT</strong> (again) — re-normalizes whitespace after {@code final}
  *       insertions</li>
+ *   <li><strong>TernaryWrap</strong> — wraps ternary conditional expressions when the
+ *       line exceeds 80 characters, placing {@code ?} and {@code :} branches
+ *       on separate lines</li>
  *   <li><strong>ParamPerLine</strong> — wraps method/constructor parameters one-per-line
  *       when the declaration exceeds 80 characters</li>
  *   <li><strong>ConditionWrap</strong> — wraps compound boolean conditions in
  *       {@code if}/{@code while}/{@code do-while} one-per-line when the line
  *       exceeds 80 characters</li>
- *   <li><strong>TernaryWrap</strong> — wraps ternary conditional expressions when the
- *       line exceeds 80 characters, placing {@code ?} and {@code :} branches
- *       on separate lines</li>
  *   <li><strong>CommaFirst</strong> — transforms trailing commas in multi-line lists to
  *       leading commas on continuation lines (Elm-style)</li>
  * </ol>
@@ -53,14 +53,14 @@ public final class AfmtFormatter
         // Re-format after 'final' insertion to fix indentation
         result = eclipse.format(result);
 
-        // Pass 4: Wrap method/constructor params one-per-line when declaration > 80 chars
+        // Pass 4: Wrap ternary expressions when > 80 chars
+        result = TernaryWrapPass.apply(result);
+
+        // Pass 5: Wrap method/constructor params one-per-line when declaration > 80 chars
         result = ParamPerLinePass.apply(result);
 
-        // Pass 5: Wrap compound boolean conditions one-per-line when > 80 chars
+        // Pass 6: Wrap compound boolean conditions one-per-line when > 80 chars
         result = ConditionWrapPass.apply(result);
-
-        // Pass 6: Wrap ternary expressions when > 80 chars
-        result = TernaryWrapPass.apply(result);
 
         // Pass 7: Comma-first transformation
         result = CommaFirstPass.apply(result);

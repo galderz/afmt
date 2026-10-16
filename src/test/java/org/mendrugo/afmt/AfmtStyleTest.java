@@ -412,6 +412,26 @@ class AfmtStyleTest
     }
 
     @Test
+    void wrapsTernaryBeforeMethodCallSplit()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        final String outerIndent = indent.length() >= 4 ? indent.substring(0, indent.length() - 4) : indent;
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("indent.length() >= 4\n"),
+                "condition should stay on original line: " + output);
+        assertTrue(output.contains("            ? indent.substring(0, indent.length() - 4)\n"),
+                "true branch with method call stays on one line: " + output);
+        assertTrue(output.contains("            : indent;\n"),
+                "false branch on new line with :: " + output);
+    }
+
+    @Test
     void doesNotWrapShortTernary()
     {
         final String input = """

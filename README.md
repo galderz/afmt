@@ -120,20 +120,20 @@ Source
               │
               ▼
 ┌─────────────────────────────────┐
-│ 5. ParamPerLinePass             │  Wrap method/constructor params
-│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
-└─────────────┬───────────────────┘
-              │
-              ▼
-┌─────────────────────────────────┐
-│ 6. ConditionWrapPass            │  Wrap compound boolean conditions
-│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
-└─────────────┬───────────────────┘
-              │
-              ▼
-┌─────────────────────────────────┐
-│ 7. TernaryWrapPass              │  Wrap ternary expressions when
+│ 5. TernaryWrapPass              │  Wrap ternary expressions when
 │    (javac parser + AST walk)    │  line > 80 chars
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│ 6. ParamPerLinePass             │  Wrap method/constructor params
+│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│ 7. ConditionWrapPass            │  Wrap compound boolean conditions
+│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
 └─────────────┬───────────────────┘
               │
               ▼
@@ -151,11 +151,11 @@ Source
 
 - **FinalLocalsPass** — Uses javac's parser to find local variables that are effectively final (never reassigned, incremented, or compound-assigned). Inserts `final` keyword. Skips fields, method/constructor parameters, catch parameters, lambda parameters, and record components.
 
+- **TernaryWrapPass** — Uses javac's parser to find ternary conditional expressions (`condition ? trueExpr : falseExpr`) whose line exceeds 80 characters. The condition stays on the original line; the `?` and `:` branches each go on a new line, indented one level deeper than the statement. Short ternaries that fit within 80 characters are left on a single line. Nested ternaries where one branch is itself a ternary are handled by filtering overlapping replacements. Runs before ParamPerLinePass so that ternary wrapping takes priority over method call argument splitting.
+
 - **ParamPerLinePass** — Uses javac's parser to find method declarations, constructor declarations, method calls, and constructor invocations (`new`) whose parameter/argument list would exceed 80 characters on a single line. Wraps each parameter or argument onto its own line, indented one level deeper than the declaration or call. The closing `)` goes on its own line at the statement's indentation level. Method calls and constructor invocations with a single argument are exempt from wrapping. Runs after Eclipse JDT so the wrapping is not collapsed back, and before CommaFirstPass so trailing commas are converted to leading commas.
 
 - **ConditionWrapPass** — Uses javac's parser to find `if`, `while`, and `do-while` statements whose compound boolean condition (`&&` or `||`) would exceed 80 characters on a single line. Flattens the top-level chain of the same operator and wraps each operand onto its own line. The first operand stays on the same line as the keyword; subsequent operands are prefixed with the operator and indented one level deeper. The closing `)` goes on its own line at the statement's indentation level. Conditions with a single operand are not wrapped.
-
-- **TernaryWrapPass** — Uses javac's parser to find ternary conditional expressions (`condition ? trueExpr : falseExpr`) whose line exceeds 80 characters. The condition stays on the original line; the `?` and `:` branches each go on a new line, indented one level deeper than the statement. Short ternaries that fit within 80 characters are left on a single line. Nested ternaries where one branch is itself a ternary are handled by filtering overlapping replacements.
 
 - **CommaFirstPass** — Lexically aware transformer that tracks strings, characters, text blocks, and comments. Finds trailing commas on lines where the next continuation line is not a closing delimiter, and moves the comma to lead the next line. Applies iteratively until stable.
 
