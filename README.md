@@ -13,6 +13,7 @@ Java source formatter for [Attimo](https://github.com/galderz/attimo)'s Aeron-in
 | **4-space indent** | No tabs |
 | **Params per line** | Method/constructor declarations and method calls exceeding 80 chars get one parameter per line (single-argument calls are exempt) |
 | **Comma-first** | `, secondArg` on a new line |
+| **Condition per line** | Compound `if`/`while`/`do-while` conditions exceeding 80 chars split on `&&`/`\|\|` |
 | **Switch arrow body on new line** | Arrow-case body on a separate line, cases indented inside switch braces |
 | **Braces always required** | Even for single-line `if`/`for`/`while` |
 | **Comments preserved** | Javadoc, block comments, and line comments are never reformatted |
@@ -124,7 +125,13 @@ Source
               │
               ▼
 ┌─────────────────────────────────┐
-│ 6. CommaFirstPass               │  Move trailing commas to leading
+│ 6. ConditionWrapPass            │  Wrap compound boolean conditions
+│    (javac parser + AST walk)    │  one-per-line when line > 80 chars
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│ 7. CommaFirstPass               │  Move trailing commas to leading
 │    (lexical transformer)        │  position on continuation lines
 └─────────────────────────────────┘
 ```
@@ -139,6 +146,8 @@ Source
 
 - **ParamPerLinePass** — Uses javac's parser to find method declarations, constructor declarations, method calls, and constructor invocations (`new`) whose parameter/argument list would exceed 80 characters on a single line. Wraps each parameter or argument onto its own line, indented one level deeper than the declaration or call. The closing `)` goes on its own line at the statement's indentation level. Method calls and constructor invocations with a single argument are exempt from wrapping. Runs after Eclipse JDT so the wrapping is not collapsed back, and before CommaFirstPass so trailing commas are converted to leading commas.
 
+- **ConditionWrapPass** — Uses javac's parser to find `if`, `while`, and `do-while` statements whose compound boolean condition (`&&` or `||`) would exceed 80 characters on a single line. Flattens the top-level chain of the same operator and wraps each operand onto its own line. The first operand stays on the same line as the keyword; subsequent operands are prefixed with the operator and indented one level deeper. The closing `)` goes on its own line at the statement's indentation level. Conditions with a single operand are not wrapped.
+
 - **CommaFirstPass** — Lexically aware transformer that tracks strings, characters, text blocks, and comments. Finds trailing commas on lines where the next continuation line is not a closing delimiter, and moves the comma to lead the next line. Applies iteratively until stable.
 
 ## Known limitations
@@ -147,7 +156,7 @@ Source
 
 - **Import ordering** follows Eclipse JDT defaults. Custom import group ordering (e.g., separating `java.*` from third-party) is not yet configurable.
 
-- **Comma-first alignment** uses a simple heuristic (indent - 2 spaces) for comma placement. Complex nested expressions may not align perfectly in all cases.
+- **Comma-first alignment** places the comma at the same indentation as the first element. Complex nested expressions may not align perfectly in all cases.
 
 - **`final` on for-each variables** — The pass adds `final` to enhanced for-loop variables (`for (final String s : list)`), which is correct Java but may not be desired by all style guides.
 

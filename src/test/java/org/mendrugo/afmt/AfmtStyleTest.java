@@ -334,6 +334,64 @@ class AfmtStyleTest
     }
 
     @Test
+    void wrapsCompoundConditionWhenLineExceeds80Chars()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        if (node.getElseStatement() != null && node.getElseStatement().getKind() != Tree.Kind.IF) {
+                            doWork();
+                        }
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("if (node.getElseStatement() != null\n"),
+                "first condition stays on same line as if: " + output);
+        assertTrue(output.contains("            && node.getElseStatement().getKind() != Tree.Kind.IF\n"),
+                "second condition on new line with && operator: " + output);
+        assertTrue(output.contains("        )\n"),
+                "closing paren on its own line: " + output);
+    }
+
+    @Test
+    void doesNotWrapConditionWithSingleOperand()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        if (node.getElseStatement() != null) {
+                            doWork();
+                        }
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("if (node.getElseStatement() != null)\n"),
+                "single condition should stay on one line: " + output);
+    }
+
+    @Test
+    void doesNotWrapShortCompoundCondition()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        if (a != null && b != null) {
+                            doWork();
+                        }
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("if (a != null && b != null)"),
+                "short compound condition should stay on one line: " + output);
+    }
+
+    @Test
     void preservesSourceWithStringsContainingCommas()
     {
         final String input = """
