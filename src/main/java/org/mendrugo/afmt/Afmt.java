@@ -21,14 +21,21 @@ import java.util.List;
  */
 public final class Afmt
 {
-    private Afmt() {}
+    private Afmt()
+    {
+    }
 
     public static void main(String[] args)
     {
         System.exit(run(args, System.in, System.out, System.err));
     }
 
-    static int run(String[] args, InputStream in, PrintStream out, PrintStream err)
+    static int run(
+        String[] args
+        , InputStream in
+        , PrintStream out
+        , PrintStream err
+    )
     {
         if (args.length == 0)
         {
@@ -44,9 +51,12 @@ public final class Afmt
         {
             switch (arg)
             {
-                case "--check" -> check = true;
-                case "--help", "-h", "-?" -> help = true;
-                default -> files.add(arg);
+                case "--check" ->
+                    check = true;
+                case "--help", "-h", "-?" ->
+                    help = true;
+                default ->
+                    files.add(arg);
             }
         }
 
@@ -85,7 +95,10 @@ public final class Afmt
 
             try
             {
-                final String input = Files.readString(path, StandardCharsets.UTF_8);
+                final String input = Files.readString(
+                    path
+                    , StandardCharsets.UTF_8
+                );
                 final String output = formatter.format(input);
 
                 if (check)
@@ -120,12 +133,19 @@ public final class Afmt
         return check && hasUnformatted ? 1 : 0;
     }
 
-    private static int formatStdin(AfmtFormatter formatter, InputStream in
-            , PrintStream out, PrintStream err)
+    private static int formatStdin(
+        AfmtFormatter formatter
+        , InputStream in
+        , PrintStream out
+        , PrintStream err
+    )
     {
         try
         {
-            final String input = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            final String input = new String(
+                in.readAllBytes()
+                , StandardCharsets.UTF_8
+            );
             final String output = formatter.format(input);
             out.print(output);
             out.flush();
