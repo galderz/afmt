@@ -289,6 +289,51 @@ class AfmtStyleTest
     }
 
     @Test
+    void switchArrowCaseBodyOnSeparateLine()
+    {
+        final String input = """
+                class Example {
+                    void run(String arg) {
+                        switch (arg) {
+                            case "--check" -> check = true;
+                            case "--help", "-h", "-?" -> help = true;
+                            default -> files.add(arg);
+                        }
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("case \"--check\" ->\n"),
+                "arrow case body should be on separate line: " + output);
+        assertTrue(output.contains("case \"--help\""),
+                "multi-label case preserved: " + output);
+        assertTrue(output.contains("default ->\n"),
+                "default body should be on separate line: " + output);
+    }
+
+    @Test
+    void switchCasesIndentedInsideBraces()
+    {
+        final String input = """
+                class Example {
+                    void run(String arg) {
+                        for (String a : args) {
+                            switch (a) {
+                                case "--check" -> check = true;
+                                default -> files.add(a);
+                            }
+                        }
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("            {\n                case"),
+                "case should be indented inside switch braces: " + output);
+    }
+
+    @Test
     void preservesSourceWithStringsContainingCommas()
     {
         final String input = """

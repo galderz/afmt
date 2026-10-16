@@ -88,6 +88,10 @@ final class EclipseFormatter
                 DefaultCodeFormatterConstants.NEXT_LINE);
         opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_SWITCH,
                 DefaultCodeFormatterConstants.NEXT_LINE);
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_BLOCK_IN_CASE,
+                DefaultCodeFormatterConstants.NEXT_LINE);
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_BLOCK_IN_CASE_AFTER_ARROW,
+                DefaultCodeFormatterConstants.NEXT_LINE);
         opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_ANONYMOUS_TYPE_DECLARATION,
                 DefaultCodeFormatterConstants.NEXT_LINE);
         opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_ENUM_DECLARATION,
@@ -104,6 +108,15 @@ final class EclipseFormatter
                 DefaultCodeFormatterConstants.NEXT_LINE);
         opts.put(DefaultCodeFormatterConstants.FORMATTER_BRACE_POSITION_FOR_LAMBDA_BODY,
                 DefaultCodeFormatterConstants.NEXT_LINE);
+
+        // --- Switch: indent cases, body on separate line for arrow cases ---
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_INDENT_SWITCHSTATEMENTS_COMPARE_TO_SWITCH, "true");
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_INDENT_SWITCHSTATEMENTS_COMPARE_TO_CASES, "true");
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_SWITCH_CASE_WITH_ARROW_ON_ONE_LINE,
+                DefaultCodeFormatterConstants.ONE_LINE_NEVER);
+        opts.put(DefaultCodeFormatterConstants.FORMATTER_ALIGNMENT_FOR_SWITCH_CASE_WITH_ARROW,
+                DefaultCodeFormatterConstants.createAlignmentValue(
+                    true, DefaultCodeFormatterConstants.WRAP_ONE_PER_LINE));
 
         // --- Keep empty bodies on same line: {} ---
         opts.put(DefaultCodeFormatterConstants.FORMATTER_KEEP_EMPTY_ARRAY_INITIALIZER_ON_ONE_LINE, "true");
