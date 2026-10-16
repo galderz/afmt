@@ -35,8 +35,7 @@ public final class Afmt
         , InputStream in
         , PrintStream out
         , PrintStream err
-    )
-    {
+    ) {
         if (args.length == 0)
         {
             printUsage(err);
@@ -138,8 +137,7 @@ public final class Afmt
         , InputStream in
         , PrintStream out
         , PrintStream err
-    )
-    {
+    ) {
         try
         {
             final String input = new String(

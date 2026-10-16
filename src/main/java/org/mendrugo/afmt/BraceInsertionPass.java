@@ -22,7 +22,9 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  */
 final class BraceInsertionPass
 {
-    private BraceInsertionPass() {}
+    private BraceInsertionPass()
+    {
+    }
 
     static String apply(String source)
     {
@@ -44,13 +46,19 @@ final class BraceInsertionPass
             return source;
         }
 
-        final var fileObject = new FinalLocalsPass.SimpleSourceFileObject("BraceTarget.java", source);
+        final var fileObject = new FinalLocalsPass.SimpleSourceFileObject(
+            "BraceTarget.java"
+            , source
+        );
         final var diagnostics = new javax.tools.DiagnosticCollector<javax.tools.JavaFileObject>();
 
         final JavacTask task = (JavacTask) compiler.getTask(
-            null, null, diagnostics
+            null
+            , null
+            , diagnostics
             , List.of("--enable-preview", "-source", "25")
-            , null, List.of(fileObject)
+            , null
+            , List.of(fileObject)
         );
 
         final Iterable<? extends CompilationUnitTree> units;
@@ -63,7 +71,9 @@ final class BraceInsertionPass
             return source;
         }
 
-        final var cu = units.iterator().hasNext() ? units.iterator().next() : null;
+        final var cu = units.iterator().hasNext()
+            ? units.iterator().next()
+            : null;
         if (cu == null)
         {
             return source;
@@ -83,15 +93,18 @@ final class BraceInsertionPass
         final var result = new StringBuilder(source);
         for (final var insertion : collector.insertions)
         {
-            if (insertion.position >= 0 && insertion.position <= result.length())
-            {
+            if (insertion.position >= 0
+                && insertion.position <= result.length()
+            ) {
                 result.insert(insertion.position, insertion.text);
             }
         }
         return result.toString();
     }
 
-    private record BraceInsertion(int position, String text) {}
+    private record BraceInsertion(int position, String text)
+    {
+    }
 
     private static final class UnbracedBodyCollector extends TreeScanner<Void, Void>
     {
@@ -110,8 +123,8 @@ final class BraceInsertionPass
         {
             insertBracesIfNeeded(node.getThenStatement());
             if (node.getElseStatement() != null
-                    && node.getElseStatement().getKind() != Tree.Kind.IF)
-            {
+                && node.getElseStatement().getKind() != Tree.Kind.IF
+            ) {
                 insertBracesIfNeeded(node.getElseStatement());
             }
             return super.visitIf(node, unused);
@@ -125,8 +138,10 @@ final class BraceInsertionPass
         }
 
         @Override
-        public Void visitEnhancedForLoop(EnhancedForLoopTree node, final Void unused)
-        {
+        public Void visitEnhancedForLoop(
+            EnhancedForLoopTree node
+            , final Void unused
+        ) {
             insertBracesIfNeeded(node.getStatement());
             return super.visitEnhancedForLoop(node, unused);
         }
@@ -164,7 +179,9 @@ final class BraceInsertionPass
             final String indent = findIndentAt(startPos);
 
             // Insert "{\n" + indent before the statement, and "\n" + outerIndent + "}" after
-            final String outerIndent = indent.length() >= 4 ? indent.substring(0, indent.length() - 4) : indent;
+            final String outerIndent = indent.length() >= 4
+                ? indent.substring(0, indent.length() - 4)
+                : indent;
             insertions.add(new BraceInsertion(endPos, "\n" + outerIndent + "}"));
             insertions.add(new BraceInsertion(startPos, "{\n" + indent));
         }
