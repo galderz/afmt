@@ -17,6 +17,9 @@ package org.mendrugo.afmt;
  *   <li><strong>ConditionWrap</strong> — wraps compound boolean conditions in
  *       {@code if}/{@code while}/{@code do-while} one-per-line when the line
  *       exceeds 80 characters</li>
+ *   <li><strong>TernaryWrap</strong> — wraps ternary conditional expressions when the
+ *       line exceeds 80 characters, placing {@code ?} and {@code :} branches
+ *       on separate lines</li>
  *   <li><strong>CommaFirst</strong> — transforms trailing commas in multi-line lists to
  *       leading commas on continuation lines (Elm-style)</li>
  * </ol>
@@ -56,7 +59,10 @@ public final class AfmtFormatter
         // Pass 5: Wrap compound boolean conditions one-per-line when > 80 chars
         result = ConditionWrapPass.apply(result);
 
-        // Pass 6: Comma-first transformation
+        // Pass 6: Wrap ternary expressions when > 80 chars
+        result = TernaryWrapPass.apply(result);
+
+        // Pass 7: Comma-first transformation
         result = CommaFirstPass.apply(result);
 
         return result;

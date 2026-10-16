@@ -392,6 +392,62 @@ class AfmtStyleTest
     }
 
     @Test
+    void wrapsTernaryWhenLineExceeds80Chars()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        final String outerIndent = indent.length() >= 4 ? "helllllllllllllllllllllllllllllllo" : indent;
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("indent.length() >= 4\n"),
+                "condition should stay on original line: " + output);
+        assertTrue(output.contains("            ? \"helllllllllllllllllllllllllllllllo\"\n"),
+                "true branch on new line with ?: " + output);
+        assertTrue(output.contains("            : indent;\n"),
+                "false branch on new line with :: " + output);
+    }
+
+    @Test
+    void doesNotWrapShortTernary()
+    {
+        final String input = """
+                class Example {
+                    void run() {
+                        int x = a > b ? a : b;
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("a > b ? a : b"),
+                "short ternary should stay on one line: " + output);
+    }
+
+    @Test
+    void wrapsTernaryInReturnStatement()
+    {
+        final String input = """
+                class Example {
+                    String run(String longVariableName, String anotherLongVariableName) {
+                        return longVariableName != null ? longVariableName.toUpperCase() : anotherLongVariableName;
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("longVariableName != null\n"),
+                "condition should stay on original line: " + output);
+        assertTrue(output.contains("? longVariableName.toUpperCase()\n"),
+                "true branch on new line with ?: " + output);
+        assertTrue(output.contains(": anotherLongVariableName;\n"),
+                "false branch on new line with :: " + output);
+    }
+
+    @Test
     void preservesSourceWithStringsContainingCommas()
     {
         final String input = """
