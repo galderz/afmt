@@ -26,8 +26,8 @@ class AttimoStyleIntegrationTest
         // redundant 'final' to them. Verify the record is well-formed.
         assertTrue(output.contains("String instanceType"), "record component preserved: " + output);
         // Allman brace on the record body
-        assertTrue(output.contains("\n{") || output.contains("\n{}\n"),
-                "record body brace on next line: " + output);
+        assertTrue(output.contains(") {\n") || output.contains(")\n{"),
+                "record body brace present: " + output);
     }
 
     @Test
@@ -51,8 +51,8 @@ class AttimoStyleIntegrationTest
 
         // Allman braces
         assertTrue(output.contains("recommend("), "method preserved: " + output);
-        assertTrue(output.contains("\n    {") || output.contains("\n{"),
-                "method brace on next line: " + output);
+        assertTrue(output.contains(") {\n") || output.contains(")\n    {"),
+                "method brace present: " + output);
 
         // final on locals
         assertTrue(output.contains("final var regionGroup"), "final var: " + output);

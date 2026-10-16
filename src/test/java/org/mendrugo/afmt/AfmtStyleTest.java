@@ -177,8 +177,8 @@ class AfmtStyleTest
                 "comma aligned with first param at 8-space indent: " + output);
         assertTrue(output.contains("        , PrintStream err\n"),
                 "comma aligned with first param at 8-space indent: " + output);
-        assertTrue(output.contains("    )\n"),
-                "closing paren on its own line: " + output);
+        assertTrue(output.contains("    ) {\n"),
+                "closing paren and brace on same line: " + output);
     }
 
     @Test
@@ -351,8 +351,8 @@ class AfmtStyleTest
                 "first condition stays on same line as if: " + output);
         assertTrue(output.contains("            && node.getElseStatement().getKind() != Tree.Kind.IF\n"),
                 "second condition on new line with && operator: " + output);
-        assertTrue(output.contains("        )\n"),
-                "closing paren on its own line: " + output);
+        assertTrue(output.contains("        ) {\n"),
+                "closing paren and brace on same line: " + output);
     }
 
     @Test
