@@ -10,6 +10,8 @@ import javax.tools.ToolProvider;
 import com.sun.source.tree.*;
 import com.sun.source.util.JavacTask;
 import com.sun.source.util.TreeScanner;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 /**
  * Inserts braces around unbraced control-flow bodies ({@code if}, {@code else},
@@ -150,9 +152,8 @@ final class BraceInsertionPass
                 return;
             }
 
-            final int startPos = (int) ((com.sun.tools.javac.tree.JCTree) stmt).getStartPosition();
-            final int endPos = (int) ((com.sun.tools.javac.tree.JCTree) stmt).getEndPosition(
-                    ((com.sun.tools.javac.tree.JCTree.JCCompilationUnit) cu).endPositions);
+            final int startPos = ((JCTree) stmt).getStartPosition();
+            final int endPos = ((JCTree) stmt).getEndPosition(((JCCompilationUnit) cu).endPositions);
 
             if (startPos < 0 || endPos < 0 || endPos > source.length())
             {
