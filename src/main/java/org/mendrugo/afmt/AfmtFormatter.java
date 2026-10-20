@@ -22,6 +22,9 @@ package org.mendrugo.afmt;
  *       exceeds 80 characters</li>
  *   <li><strong>ParenBraceJoin</strong> — joins {@code )} and {@code {}} onto the same
  *       line when both are alone on consecutive lines (multi-line splits)</li>
+ *   <li><strong>EnumConstantPerLine</strong> — places each enum constant on its own
+ *       line, with the terminating {@code ;} on a separate line when the enum
+ *       has additional members</li>
  *   <li><strong>CommaFirst</strong> — transforms trailing commas in multi-line lists to
  *       leading commas on continuation lines (Elm-style)</li>
  * </ol>
@@ -67,7 +70,10 @@ public final class AfmtFormatter
         // Pass 7: Join ) and { onto same line for multi-line splits
         result = ParenBraceJoinPass.apply(result);
 
-        // Pass 8: Comma-first transformation
+        // Pass 8: Enum constants one-per-line
+        result = EnumConstantPerLinePass.apply(result);
+
+        // Pass 9: Comma-first transformation
         result = CommaFirstPass.apply(result);
 
         return result;

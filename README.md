@@ -16,6 +16,7 @@ Java source formatter for [Attimo](https://github.com/galderz/attimo)'s Aeron-in
 | **Condition per line** | Compound `if`/`while`/`do-while` conditions exceeding 80 chars split on `&&`/`\|\|` |
 | **Ternary wrap** | Ternary expressions exceeding 80 chars split `?` and `:` onto separate lines |
 | **Paren-brace join** | `) {` on same line when params/conditions are split across multiple lines |
+| **Enum constants per line** | Each enum constant on its own line with comma-first; `;` on a separate line when the enum has a body |
 | **Switch arrow body on new line** | Arrow-case body on a separate line, cases indented inside switch braces |
 | **Braces always required** | Even for single-line `if`/`for`/`while` |
 | **Comments preserved** | Javadoc, block comments, and line comments are never reformatted |
@@ -145,7 +146,13 @@ Source
               │
               ▼
 ┌─────────────────────────────────┐
-│ 9. CommaFirstPass               │  Move trailing commas to leading
+│ 9. EnumConstantPerLinePass      │  Each enum constant on its own
+│    (javac parser + AST walk)    │  line; ; on separate line if body
+└─────────────┬───────────────────┘
+              │
+              ▼
+┌─────────────────────────────────┐
+│10. CommaFirstPass               │  Move trailing commas to leading
 │    (lexical transformer)        │  position on continuation lines
 └─────────────────────────────────┘
 ```
@@ -165,6 +172,8 @@ Source
 - **ConditionWrapPass** — Uses javac's parser to find `if`, `while`, and `do-while` statements whose compound boolean condition (`&&` or `||`) would exceed 80 characters on a single line. Flattens the top-level chain of the same operator and wraps each operand onto its own line. The first operand stays on the same line as the keyword; subsequent operands are prefixed with the operator and indented one level deeper. The closing `)` goes on its own line at the statement's indentation level. Conditions with a single operand are not wrapped.
 
 - **ParenBraceJoinPass** — Lexical transformer that joins a closing `)` and opening `{` onto the same line when both appear alone on consecutive lines at the same indentation. This targets multi-line method declarations and compound conditions where the Allman-style `{` would otherwise waste a line after the lone `)`. Single-line declarations (e.g., `void run()`) are not affected because the `)` shares a line with other content.
+
+- **EnumConstantPerLinePass** — Uses javac's parser to find enum declarations and places each constant on its own line, regardless of line length. Constants with arguments or class bodies are supported. If the enum has additional members (methods, constructors, fields), the terminating `;` after the constants is placed on its own line. Runs before CommaFirstPass so trailing commas between constants are converted to leading commas.
 
 - **CommaFirstPass** — Lexically aware transformer that tracks strings, characters, text blocks, and comments. Finds trailing commas on lines where the next continuation line is not a closing delimiter, and moves the comma to lead the next line. Applies iteratively until stable.
 

@@ -501,6 +501,72 @@ class AfmtStyleTest
     }
 
     @Test
+    void enumConstantsOnePerLine()
+    {
+        final String input = """
+                class Example {
+                    enum Color { RED, GREEN, BLUE }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("    RED\n"),
+                "first constant on its own line: " + output);
+        assertTrue(output.contains("    , GREEN\n"),
+                "second constant with leading comma: " + output);
+        assertTrue(output.contains("    , BLUE\n"),
+                "third constant with leading comma: " + output);
+    }
+
+    @Test
+    void enumConstantsWithBodySemicolonOnOwnLine()
+    {
+        final String input = """
+                class Example {
+                    enum Color {
+                        RED, GREEN, BLUE;
+
+                        Color() {}
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("        RED\n"),
+                "first constant on its own line: " + output);
+        assertTrue(output.contains("        , GREEN\n"),
+                "second constant with leading comma: " + output);
+        assertTrue(output.contains("        , BLUE\n"),
+                "third constant with leading comma: " + output);
+        assertTrue(output.contains("        ;\n"),
+                "semicolon on its own line: " + output);
+    }
+
+    @Test
+    void enumConstantsWithArguments()
+    {
+        final String input = """
+                class Example {
+                    enum Color {
+                        RED(255, 0, 0), GREEN(0, 255, 0), BLUE(0, 0, 255);
+
+                        Color(int r, int g, int b) {}
+                    }
+                }
+                """;
+        final String output = formatter.format(input);
+
+        assertTrue(output.contains("RED(255, 0, 0)\n"),
+                "first constant with args on its own line: " + output);
+        assertTrue(output.contains(", GREEN(0, 255, 0)\n"),
+                "second constant with leading comma: " + output);
+        assertTrue(output.contains(", BLUE(0, 0, 255)\n"),
+                "third constant with leading comma: " + output);
+        assertTrue(output.contains("        ;\n"),
+                "semicolon on its own line: " + output);
+    }
+
+    @Test
     void formatsAnnotationWithCommaFirst()
     {
         final String input = """
